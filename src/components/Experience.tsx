@@ -6,9 +6,12 @@ import {
 	RandomizedLight,
 } from '@react-three/drei';
 import React from 'react';
+import { useConfiguratorContext } from '../context/ConfiguratorContextProvider.tsx';
 import { Table } from './Table.tsx';
 
 export const Experience = () => {
+	const { legs } = useConfiguratorContext();
+
 	return (
 		<>
 			<OrbitControls minPolarAngle={0} maxPolarAngle={Math.PI / 2} />

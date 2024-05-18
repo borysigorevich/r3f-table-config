@@ -4,56 +4,109 @@ Command: npx gltfjsx@6.2.16 ./public/models/Table.gltf
 */
 
 import { useGLTF } from '@react-three/drei';
-import React from 'react';
+import { useFrame } from '@react-three/fiber';
+import React, { useEffect, useRef } from 'react';
+import { Color, Material, Mesh, MeshStandardMaterial, Vector3 } from 'three';
 import { useConfiguratorContext } from '../context/ConfiguratorContextProvider.tsx';
+
+const DELTA_MULTIPLIER = 10;
 
 export function Table(props) {
 	const { nodes, materials } = useGLTF('/models/Table.gltf');
 
-	const { legs } = useConfiguratorContext();
+	const { legs, legsColor, tableWidth } = useConfiguratorContext();
+
+	const plate = useRef<Mesh>(null);
+	const leftLegs = useRef<Mesh>(null);
+	const rightLegs = useRef<Mesh>(null);
+
+	useFrame((state, delta) => {
+		const tableWidthScale = tableWidth / 100 + 0.5;
+
+		plate.current.scale.lerp(
+			new Vector3(tableWidthScale, 1, 1),
+			delta * DELTA_MULTIPLIER
+		);
+		leftLegs.current.position.lerp(
+			new Vector3(-1.5 * tableWidthScale, 0, 0),
+			delta * DELTA_MULTIPLIER
+		);
+		rightLegs.current.position.lerp(
+			new Vector3(1.5 * tableWidthScale, 0, 0),
+			delta * DELTA_MULTIPLIER
+		);
+	});
+
+	useEffect(() => {
+		(materials.Metal as MeshStandardMaterial).color = new Color(legsColor);
+	}, [legsColor]);
 
 	return (
 		<group {...props} dispose={null}>
-			<mesh geometry={nodes.Plate.geometry} material={materials.Plate} />
 			<mesh
-				geometry={nodes.Legs01Left.geometry}
-				material={materials.Metal}
-				position={[-1.5, 0, 0]}
-				castShadow
+				geometry={nodes.Plate.geometry}
+				material={materials.Plate}
+				ref={plate}
 			/>
+			{legs === 0 && (
+				<>
+					<mesh
+						geometry={nodes.Legs01Left.geometry}
+						material={materials.Metal}
+						position={[-1.5, 0, 0]}
+						castShadow
+						ref={leftLegs}
+					/>
 
-			<mesh
-				geometry={nodes.Legs01Right.geometry}
-				material={materials.Metal}
-				position={[1.5, 0, 0]}
-				castShadow
-			/>
+					<mesh
+						geometry={nodes.Legs01Right.geometry}
+						material={materials.Metal}
+						position={[1.5, 0, 0]}
+						castShadow
+						ref={rightLegs}
+					/>
+				</>
+			)}
 
-			<mesh
-				geometry={nodes.Legs02Left.geometry}
-				material={materials.Metal}
-				position={[-1.5, 0, 0]}
-				castShadow
-			/>
+			{legs === 1 && (
+				<>
+					<mesh
+						geometry={nodes.Legs02Left.geometry}
+						material={materials.Metal}
+						position={[-1.5, 0, 0]}
+						castShadow
+						ref={leftLegs}
+					/>
 
-			<mesh
-				geometry={nodes.Legs02Right.geometry}
-				material={materials.Metal}
-				position={[1.5, 0, 0]}
-				castShadow
-			/>
-			<mesh
-				geometry={nodes.Legs03Left.geometry}
-				material={materials.Metal}
-				position={[-1.5, 0, 0]}
-				castShadow
-			/>
-			<mesh
-				geometry={nodes.Legs03Right.geometry}
-				material={materials.Metal}
-				position={[1.5, 0, 0]}
-				castShadow
-			/>
+					<mesh
+						geometry={nodes.Legs02Right.geometry}
+						material={materials.Metal}
+						position={[1.5, 0, 0]}
+						castShadow
+						ref={rightLegs}
+					/>
+				</>
+			)}
+
+			{legs === 2 && (
+				<>
+					<mesh
+						geometry={nodes.Legs03Left.geometry}
+						material={materials.Metal}
+						position={[-1.5, 0, 0]}
+						castShadow
+						ref={leftLegs}
+					/>
+
+					<mesh
+						geometry={nodes.Legs03Right.geometry}
+						material={materials.Metal}
+						position={[1.5, 0, 0]}
+						castShadow
+						ref={rightLegs}
+					/>
+				</>
+			)}
 		</group>
 	);
 }
